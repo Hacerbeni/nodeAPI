@@ -21,6 +21,11 @@ PORT=5000
 `MONGODB_URI` est facultative si vous utilisez la valeur locale par défaut.
 MongoDB Compass doit être connecté à la même URI et à la même base. Ne
 partagez pas le contenu du fichier `.env`.
+`TOKEN_SECRET` est obligatoire. L’application valide ces paramètres au
+démarrage et s’arrête avec une erreur explicite si une valeur est invalide.
+Les corps des requêtes d’inscription, de connexion et de création/modification
+de posts sont également validés avec Zod. Une requête invalide reçoit une
+réponse `400` avec les champs en erreur.
 
 Si cette base a déjà servi avec une ancienne version du projet, ouvrez
 `database` → `users` → **Indexes** dans Compass et supprimez uniquement

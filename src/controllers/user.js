@@ -2,6 +2,7 @@ require("../utils/buffer-compat");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const config = require("../config");
 const User = require("../models/User");
 
 const saltRounds = 10;
@@ -79,11 +80,6 @@ module.exports = {
         .json({ error: "Email and password are required" });
     }
 
-    if (!process.env.TOKEN_SECRET) {
-      console.error("TOKEN_SECRET is not configured.");
-      return res.status(500).json({ error: "Authentication is not configured" });
-    }
-
     try {
       const user = await User.findOne({ email }).select("+hashedPassword");
       if (!user || !user.hashedPassword) {
@@ -101,7 +97,7 @@ module.exports = {
           fullName: user.fullName,
           _id: user._id.toString(),
         },
-        process.env.TOKEN_SECRET
+        config.TOKEN_SECRET
       );
 
       return res.status(200).json({ token });

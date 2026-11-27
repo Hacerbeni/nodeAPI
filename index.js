@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("./src/config");
 require("./src/utils/buffer-compat");
 
 const express = require("express");
@@ -8,7 +8,6 @@ const User = require("./src/models/User");
 const Post = require("./src/models/Post");
 
 const app = express();
-const PORT = Number(process.env.PORT) || 5000;
 let databaseReady = false;
 
 app.disable("x-powered-by");
@@ -28,11 +27,7 @@ function authorize(req, res, next) {
     return next();
   }
 
-  if (!process.env.TOKEN_SECRET) {
-    return next(new Error("TOKEN_SECRET is not configured"));
-  }
-
-  jwt.verify(token, process.env.TOKEN_SECRET, (error, payload) => {
+  jwt.verify(token, config.TOKEN_SECRET, (error, payload) => {
     req.user =
       error || !payload || typeof payload !== "object"
         ? undefined
@@ -89,21 +84,14 @@ app.use((error, req, res, next) => {
 });
 
 function start() {
-  const server = app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`);
+  const server = app.listen(config.PORT, () => {
+    console.log(`Example app listening on port ${config.PORT}`);
   });
 
   server.on("error", (error) => {
     console.error("Could not start HTTP server:", error.message);
     process.exitCode = 1;
   });
-
-  if (!process.env.TOKEN_SECRET) {
-    console.error("TOKEN_SECRET is not configured. Set it in the .env file.");
-  }
-
-  const mongoUri =
-    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/database";
 
   mongoose.connection.on("disconnected", () => {
     databaseReady = false;
@@ -116,7 +104,7 @@ function start() {
   });
 
   mongoose
-    .connect(mongoUri)
+    .connect(config.MONGODB_URI)
     .then(() => Promise.all([User.init(), Post.init()]))
     .then(() => {
       databaseReady = true;

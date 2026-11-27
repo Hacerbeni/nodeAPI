@@ -6,6 +6,8 @@ const {
 } = require("../controllers/post");
 
 const { generateAPIKey } = require("../controllers/user");
+const validate = require("../middleware/validate");
+const { createPostBody, updatePostBody } = require("../validators/requests");
 
 function loginRequired(req, res, next) {
   if (!req.user) {
@@ -41,7 +43,18 @@ async function apiKeyRequired(req, res, next) {
 
 module.exports = (router) => {
   router.post("/generateApiKey", loginRequired, generateAPIKey);
-  router.post("/posts/create", loginRequired, apiKeyRequired, createPost);
-  router.put("/posts/update/:id", loginRequired, findOnePostAndUpdate);
+  router.post(
+    "/posts/create",
+    loginRequired,
+    apiKeyRequired,
+    validate(createPostBody),
+    createPost
+  );
+  router.put(
+    "/posts/update/:id",
+    loginRequired,
+    validate(updatePostBody),
+    findOnePostAndUpdate
+  );
   router.delete("/posts/delete/:id", loginRequired, findOnePostAndDelete);
 };
